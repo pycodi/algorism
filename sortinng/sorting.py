@@ -59,7 +59,6 @@ def quick_sort(lst):
                     side_list[i], side_list[i + 1] = side_list[i + 1], side_list[i]
                     sorted_ = False
         result.append(side_list)
-        return result
 
     t1 = threading.Thread(target=_bubble, args=(left_side, ))
     t1.start()
