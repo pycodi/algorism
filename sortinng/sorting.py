@@ -1,12 +1,14 @@
+import multiprocessing.pool as mpp
 import random
 import threading
 import copy
 import itertools
 import datetime
+import queue
 import time
 
 
-INPUT = [random.randint(pow(2, 2), pow(2, 10)) for i in range(2000)]
+INPUT = [random.randint(pow(2, 2), pow(2, 10)) for i in range(8000)]
 
 
 def taimer(f):
@@ -15,7 +17,7 @@ def taimer(f):
         t1 = time.time()
         result = f(*args, **kwargs)
         t2 = time.time()
-        print('Result {} seconds'.format(t2 -t1))
+        print('Result for {}: {} seconds'.format(f.__name__, t2 -t1))
         return result
     return wrapper
 
@@ -70,6 +72,34 @@ def quick_sort(lst):
     del right_side
     return list(itertools.chain(*result))
 
+
+@taimer
+def insert_sort(lst):
+    """ Сортировка вставкой """
+    for i in range(1, len(lst)):
+        key = lst[i]
+        point = i-1
+        while point >= 0 and key < lst[point]:
+            lst[point+1] = lst[point]
+            point -= 1
+        lst[point+1] = key
+    return lst
+
+@taimer
+def merge_sort(lst):
+    """ Сортировка слиянием """
+    if len(lst) <= 1:
+        return lst
+    #if len(lst) > 2:
+    #    return merge_sort(lst)
+
+    def _merge(l_):
+        print(l_)
+
+    with mpp.ThreadPool(10) as pool:
+        result = [pool.apply_async(_merge, args=(lst, )) ]
+
 if __name__ == '__main__':
+    print(output(insert_sort(INPUT)))
     print(output(bubble_sort(INPUT)))
     print(output(quick_sort(INPUT)))
