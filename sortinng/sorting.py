@@ -1,14 +1,15 @@
 import multiprocessing.pool as mpp
 import random
 import threading
-import copy
 import itertools
-import datetime
-import queue
 import time
+from gevent.monkey import patch_all
+import gevent
+
+patch_all(thread=False)
 
 
-INPUT = [random.randint(pow(2, 2), pow(2, 10)) for i in range(8000)]
+INPUT = list(random.randint(pow(2, 2), pow(2, 10)) for i in range(3000))
 
 
 def taimer(f):
@@ -74,6 +75,36 @@ def quick_sort(lst):
 
 
 @taimer
+def quick_sort_gevent(lst):
+    """ Быстрая сортировка """
+    point = random.randint(0, len(lst)-1)
+    left_side = []
+    right_side = []
+    result = []
+    for i, v in enumerate(lst):
+        if v < lst[point]:
+            left_side.append(v)
+        if v > lst[point]:
+            right_side.append(v)
+
+    def _bubble(side_list):
+        sorted_ = False
+        while not sorted_:
+            sorted_ = True
+            for i in range(len(side_list) - 1):
+                if side_list[i] > side_list[i + 1]:
+                    side_list[i], side_list[i + 1] = side_list[i + 1], side_list[i]
+                    sorted_ = False
+        result.append(side_list)
+
+    g1 = gevent.spawn(_bubble, left_side)
+    g2 = gevent.spawn(_bubble, right_side)
+    gevent.joinall([g1, g2])
+    del left_side
+    del right_side
+    return list(itertools.chain(*result))
+
+@taimer
 def insert_sort(lst):
     """ Сортировка вставкой """
     for i in range(1, len(lst)):
@@ -100,6 +131,9 @@ def merge_sort(lst):
         result = [pool.apply_async(_merge, args=(lst, )) ]
 
 if __name__ == '__main__':
+
     print(output(insert_sort(INPUT)))
     print(output(bubble_sort(INPUT)))
     print(output(quick_sort(INPUT)))
+    print(output(quick_sort_gevent(INPUT)))
+
