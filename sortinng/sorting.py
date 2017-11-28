@@ -130,10 +130,47 @@ def merge_sort(lst):
     with mpp.ThreadPool(10) as pool:
         result = [pool.apply_async(_merge, args=(lst, )) ]
 
+
+@taimer
+def heap_sort(lst):
+    """
+    Последовательность: 4, 10, 3, 5, 1
+        4(0)
+       /   \
+        10(1)   3(2)
+           /   \
+     (3)    1(4)
+    """
+    n = len(lst)
+
+    def heapify(lst, n, i):
+        largest = i
+        l = 2*i+1  # left = 2*i + 1
+        r = 2*i+2  # right = 2*i + 2
+        if l < n and lst[i] < lst[l]:
+            largest = l
+        if r < n and lst[largest] < lst[r]:
+            largest = r
+
+        if largest != i:
+            lst[i], lst[largest] = lst[largest], lst[i]
+            heapify(lst, n, largest)
+
+    for i in range(n,-1,-1):
+        heapify(lst, n, i)
+
+    for i in range(n-1,0,-1):
+        lst[i], lst[0] = lst[0], lst[i]
+        heapify(lst, i, 0)
+
+    return lst
+
+
 if __name__ == '__main__':
 
     print(output(insert_sort(INPUT)))
     print(output(bubble_sort(INPUT)))
     print(output(quick_sort(INPUT)))
     print(output(quick_sort_gevent(INPUT)))
+    print(output(heap_sort(INPUT)))
 
